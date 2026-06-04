@@ -82,7 +82,7 @@ pipeline {
                                 kubectl -n ${e.ns} create secret docker-registry regcred \
                                   --docker-server=https://index.docker.io/v1/ \
                                   --docker-username="$DOCKER_USER" \
-                                  --docker-password="$DOCKER_PASS" \
+                                  --docker-password='$DOCKER_PASS' \
                                   --docker-email=ci@example.com \
                                   --dry-run=client -o yaml | kubectl apply -f -
 
@@ -135,7 +135,7 @@ pipeline {
                         kubectl -n prod create secret docker-registry regcred \
                           --docker-server=https://index.docker.io/v1/ \
                           --docker-username="$DOCKER_USER" \
-                          --docker-password="$DOCKER_PASS" \
+                          --docker-password='$DOCKER_PASS' \
                           --docker-email=ci@example.com \
                           --dry-run=client -o yaml | kubectl apply -f -
 
