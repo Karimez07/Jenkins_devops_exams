@@ -1,0 +1,25 @@
+Running from: /usr/share/java/jenkins.war
+webroot: /home/ubuntu/.jenkins/war
+2026-06-04 08:43:53.135+0000 [id=1]	INFO	winstone.Logger#logInternal: Beginning extraction from war file
+2026-06-04 08:43:53.276+0000 [id=1]	WARNING	o.e.j.ee9.nested.ContextHandler#setContextPath: Empty contextPath
+2026-06-04 08:43:53.382+0000 [id=1]	INFO	org.eclipse.jetty.server.Server#doStart: jetty-12.0.22; built: 2025-06-02T15:25:31.946Z; git: 335c9ab44a5591f0ea941bf350e139b8c4f5537c; jvm 17.0.19+10-1-24.04.2-Ubuntu
+2026-06-04 08:43:54.405+0000 [id=1]	INFO	o.e.j.e.w.StandardDescriptorProcessor#visitServlet: NO JSP Support for /, did not find org.eclipse.jetty.ee9.jsp.JettyJspServlet
+2026-06-04 08:43:54.527+0000 [id=1]	INFO	o.e.j.s.DefaultSessionIdManager#doStart: Session workerName=node0
+2026-06-04 08:43:55.392+0000 [id=1]	INFO	hudson.WebAppMain#contextInitialized: Jenkins home directory: /home/ubuntu/.jenkins found at: $user.home/.jenkins
+2026-06-04 08:43:55.639+0000 [id=1]	INFO	o.e.j.s.handler.ContextHandler#doStart: Started oeje9n.ContextHandler$CoreContextHandler@620aa4ea{Jenkins v2.516.2,/,b=file:///home/ubuntu/.jenkins/war/,a=AVAILABLE,h=oeje9n.ContextHandler$CoreContextHandler$CoreToNestedHandler@2db2dd9d{STARTED}}
+2026-06-04 08:43:55.670+0000 [id=1]	INFO	o.e.j.server.AbstractConnector#doStart: Started ServerConnector@6d511b5f{HTTP/1.1, (http/1.1)}{0.0.0.0:8083}
+2026-06-04 08:43:55.702+0000 [id=1]	INFO	org.eclipse.jetty.server.Server#doStart: Started oejs.Server@30b7c004{STARTING}[12.0.22,sto=0] @3895ms
+2026-06-04 08:43:55.704+0000 [id=24]	INFO	winstone.Logger#logInternal: Winstone Servlet Engine running: controlPort=disabled
+2026-06-04 08:43:55.975+0000 [id=23]	INFO	jenkins.model.Jenkins#<init>: Starting version 2.516.2
+2026-06-04 08:43:56.154+0000 [id=31]	INFO	jenkins.InitReactorRunner$1#onAttained: Started initialization
+2026-06-04 08:43:56.441+0000 [id=29]	INFO	jenkins.InitReactorRunner$1#onAttained: Listed all plugins
+2026-06-04 08:44:04.291+0000 [id=30]	INFO	jenkins.InitReactorRunner$1#onAttained: Prepared all plugins
+2026-06-04 08:44:04.344+0000 [id=30]	INFO	jenkins.InitReactorRunner$1#onAttained: Started all plugins
+2026-06-04 08:44:04.420+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: Augmented all extensions
+2026-06-04 08:44:05.332+0000 [id=32]	INFO	h.p.b.g.GlobalTimeOutConfiguration#load: global timeout not set
+2026-06-04 08:44:07.724+0000 [id=30]	INFO	jenkins.InitReactorRunner$1#onAttained: System config loaded
+2026-06-04 08:44:07.724+0000 [id=30]	INFO	jenkins.InitReactorRunner$1#onAttained: System config adapted
+2026-06-04 08:44:07.898+0000 [id=31]	INFO	jenkins.InitReactorRunner$1#onAttained: Loaded all jobs
+2026-06-04 08:44:08.035+0000 [id=29]	INFO	jenkins.InitReactorRunner$1#onAttained: Configuration for all jobs updated
+2026-06-04 08:44:08.189+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: Completed initialization
+2026-06-04 08:44:08.294+0000 [id=23]	INFO	hudson.lifecycle.Lifecycle#onReady: Jenkins is fully up and running
