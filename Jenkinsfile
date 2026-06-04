@@ -13,7 +13,7 @@ pipeline {
         CAST_IMAGE  = "${DOCKERHUB_USER}/cast-service"
 
         HELM_CHART = './charts'
-        IMAGE_TAG  = "${BUILD_NUMBER}"
+        IMAGE_TAG   = "${BUILD_NUMBER}"
     }
 
     stages {
@@ -26,10 +26,12 @@ pipeline {
 
         stage('Build images') {
             steps {
-                sh '''
-                    docker build -t ${MOVIE_IMAGE}:${IMAGE_TAG} ./movie-service
-                    docker build -t ${CAST_IMAGE}:${IMAGE_TAG} ./cast-service
-                '''
+                sh '''#!/bin/bash
+set -euo pipefail
+
+docker build -t "${MOVIE_IMAGE}:${IMAGE_TAG}" ./movie-service
+docker build -t "${CAST_IMAGE}:${IMAGE_TAG}" ./cast-service
+'''
             }
         }
 
@@ -40,18 +42,20 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${MOVIE_IMAGE}:${IMAGE_TAG}
-                        docker push ${CAST_IMAGE}:${IMAGE_TAG}
-                    '''
+                    sh '''#!/bin/bash
+set -euo pipefail
+
+echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+docker push "${MOVIE_IMAGE}:${IMAGE_TAG}"
+docker push "${CAST_IMAGE}:${IMAGE_TAG}"
+'''
                 }
             }
         }
 
         stage('Helm lint') {
             steps {
-                sh 'helm lint ./charts'
+                sh 'helm lint "$HELM_CHART"'
             }
         }
 
@@ -76,37 +80,48 @@ pipeline {
                         ]
 
                         environments.each { e ->
-                            sh '''#!/bin/bash
-                                kubectl create namespace ${e.ns} --dry-run=client -o yaml | kubectl apply -f -
+                            withEnv([
+                                "NAMESPACE=${e.ns}",
+                                "CAST_PORT=${e.castPort}",
+                                "MOVIE_PORT=${e.moviePort}"
+                            ]) {
+                                sh '''#!/bin/bash
+set -euo pipefail
 
-                                kubectl -n ${e.ns} create secret docker-registry regcred \
-                                  --docker-server=https://index.docker.io/v1/ \
-                                  --docker-username="$DOCKER_USER" \
-                                  --docker-password='$DOCKER_PASS' \
-                                  --docker-email=ci@example.com \
-                                  --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
-                                helm upgrade --install cast-service ${HELM_CHART} \
-                                  -n ${e.ns} --create-namespace \
-                                  --set fullnameOverride=cast-service \
-                                  --set image.repository=${CAST_IMAGE} \
-                                  --set image.tag=${IMAGE_TAG} \
-                                  --set service.type=NodePort \
-                                  --set service.nodePort=${e.castPort} \
-                                  --wait \
-                                  --timeout 5m
+kubectl -n "$NAMESPACE" create secret docker-registry regcred \
+  --docker-server=https://index.docker.io/v1/ \
+  --docker-username="$DOCKER_USER" \
+  --docker-password="$DOCKER_PASS" \
+  --docker-email=ci@example.com \
+  --dry-run=client -o yaml | kubectl apply -f -
 
-                                helm upgrade --install movie-service ${HELM_CHART} \
-                                  -n ${e.ns} --create-namespace \
-                                  --set fullnameOverride=movie-service \
-                                  --set image.repository=${MOVIE_IMAGE} \
-                                  --set image.tag=${IMAGE_TAG} \
-                                  --set service.type=NodePort \
-                                  --set service.nodePort=${e.moviePort} \
-                                  --set-string env[0].name=CAST_SERVICE_HOST_URL \
-                                  --set-string env[0].value=http://cast-service:80/api/v1/casts/ \
-                                  --wait --timeout 5m --atomic
-                            '''
+helm upgrade --install cast-service "$HELM_CHART" \
+  -n "$NAMESPACE" --create-namespace \
+  --set fullnameOverride=cast-service \
+  --set image.repository="$CAST_IMAGE" \
+  --set image.tag="$IMAGE_TAG" \
+  --set service.type=NodePort \
+  --set service.nodePort="$CAST_PORT" \
+  --wait \
+  --timeout 5m \
+  --atomic
+
+helm upgrade --install movie-service "$HELM_CHART" \
+  -n "$NAMESPACE" --create-namespace \
+  --set fullnameOverride=movie-service \
+  --set image.repository="$MOVIE_IMAGE" \
+  --set image.tag="$IMAGE_TAG" \
+  --set service.type=NodePort \
+  --set service.nodePort="$MOVIE_PORT" \
+  --set-string "env[0].name=CAST_SERVICE_HOST_URL" \
+  --set-string "env[0].value=http://cast-service:80/api/v1/casts/" \
+  --wait \
+  --timeout 5m \
+  --atomic
+'''
+                            }
                         }
                     }
                 }
@@ -118,7 +133,7 @@ pipeline {
                 branch 'master'
             }
             steps {
-                input message: 'Confirmer le déploiement en production ?', ok: 'Deploy'
+                input message: 'Confirmer le deploiement en production ?', ok: 'Deploy'
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'dockerhub-creds',
@@ -130,36 +145,42 @@ pipeline {
                         variable: 'KUBECONFIG'
                     )
                 ]) {
-                    sh '''
-                        kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
+                    sh '''#!/bin/bash
+set -euo pipefail
 
-                        kubectl -n prod create secret docker-registry regcred \
-                          --docker-server=https://index.docker.io/v1/ \
-                          --docker-username="$DOCKER_USER" \
-                          --docker-password='$DOCKER_PASS' \
-                          --docker-email=ci@example.com \
-                          --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
 
-                        helm upgrade --install cast-service ${HELM_CHART} \
-                          -n prod --create-namespace \
-                          --set fullnameOverride=cast-service \
-                          --set image.repository=${CAST_IMAGE} \
-                          --set image.tag=${IMAGE_TAG} \
-                          --set service.type=NodePort \
-                          --set service.nodePort=30088 \
-                          --wait --timeout 5m --atomic
+kubectl -n prod create secret docker-registry regcred \
+  --docker-server=https://index.docker.io/v1/ \
+  --docker-username="$DOCKER_USER" \
+  --docker-password="$DOCKER_PASS" \
+  --docker-email=ci@example.com \
+  --dry-run=client -o yaml | kubectl apply -f -
 
-                        helm upgrade --install movie-service ${HELM_CHART} \
-                          -n prod --create-namespace \
-                          --set fullnameOverride=movie-service \
-                          --set image.repository=${MOVIE_IMAGE} \
-                          --set image.tag=${IMAGE_TAG} \
-                          --set service.type=NodePort \
-                          --set service.nodePort=30087 \
-                          --set-string env[0].name=CAST_SERVICE_HOST_URL \
-                          --set-string env[0].value=http://cast-service:80/api/v1/casts/ \
-                          --wait --timeout 5m --atomic
-                    '''
+helm upgrade --install cast-service "$HELM_CHART" \
+  -n prod --create-namespace \
+  --set fullnameOverride=cast-service \
+  --set image.repository="$CAST_IMAGE" \
+  --set image.tag="$IMAGE_TAG" \
+  --set service.type=NodePort \
+  --set service.nodePort=30088 \
+  --wait \
+  --timeout 5m \
+  --atomic
+
+helm upgrade --install movie-service "$HELM_CHART" \
+  -n prod --create-namespace \
+  --set fullnameOverride=movie-service \
+  --set image.repository="$MOVIE_IMAGE" \
+  --set image.tag="$IMAGE_TAG" \
+  --set service.type=NodePort \
+  --set service.nodePort=30087 \
+  --set-string "env[0].name=CAST_SERVICE_HOST_URL" \
+  --set-string "env[0].value=http://cast-service:80/api/v1/casts/" \
+  --wait \
+  --timeout 5m \
+  --atomic
+'''
                 }
             }
         }
@@ -167,10 +188,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline terminé avec succès.'
+            echo 'Pipeline termine avec succes.'
         }
         failure {
-            echo 'Pipeline en échec. Vérifie les logs Jenkins.'
+            echo 'Pipeline en echec. Verifie les logs Jenkins.'
         }
     }
 }
