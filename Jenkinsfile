@@ -26,10 +26,10 @@ pipeline {
 
         stage('Build images') {
             steps {
-                sh """
+                sh '''
                     docker build -t ${MOVIE_IMAGE}:${IMAGE_TAG} ./movie-service
                     docker build -t ${CAST_IMAGE}:${IMAGE_TAG} ./cast-service
-                """
+                '''
             }
         }
 
@@ -76,7 +76,7 @@ pipeline {
                         ]
 
                         environments.each { e ->
-                            sh """
+                            sh '''
                                 kubectl create namespace ${e.ns} --dry-run=client -o yaml | kubectl apply -f -
 
                                 kubectl -n ${e.ns} create secret docker-registry regcred \
@@ -105,7 +105,7 @@ pipeline {
                                   --set-string env[0].name=CAST_SERVICE_HOST_URL \
                                   --set-string env[0].value=http://cast-service:80/api/v1/casts/ \
                                   --wait --timeout 5m --atomic
-                            """
+                            '''
                         }
                     }
                 }
@@ -129,7 +129,7 @@ pipeline {
                         variable: 'KUBECONFIG'
                     )
                 ]) {
-                    sh """
+                    sh '''
                         kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
 
                         kubectl -n prod create secret docker-registry regcred \
@@ -158,7 +158,7 @@ pipeline {
                           --set-string env[0].name=CAST_SERVICE_HOST_URL \
                           --set-string env[0].value=http://cast-service:80/api/v1/casts/ \
                           --wait --timeout 5m --atomic
-                    """
+                    '''
                 }
             }
         }
