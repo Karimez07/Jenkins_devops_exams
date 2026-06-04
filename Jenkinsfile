@@ -76,8 +76,8 @@ pipeline {
                         ]
 
                         environments.each { e ->
-                            sh '''
-                                "kubectl create namespace ${e.ns} --dry-run=client -o yaml | kubectl apply -f -"
+                            sh '''#!/bin/bash
+                                kubectl create namespace ${e.ns} --dry-run=client -o yaml | kubectl apply -f -
 
                                 kubectl -n ${e.ns} create secret docker-registry regcred \
                                   --docker-server=https://index.docker.io/v1/ \
