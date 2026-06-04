@@ -76,8 +76,8 @@ pipeline {
                         ]
 
                         environments.each { e ->
-                            sh """
-                                kubectl create namespace ${e.ns} --dry-run=client -o yaml | kubectl apply -f -
+                            sh '''
+                                "kubectl create namespace ${e.ns} --dry-run=client -o yaml | kubectl apply -f -"
 
                                 kubectl -n ${e.ns} create secret docker-registry regcred \
                                   --docker-server=https://index.docker.io/v1/ \
@@ -106,7 +106,7 @@ pipeline {
                                   --set-string env[0].name=CAST_SERVICE_HOST_URL \
                                   --set-string env[0].value=http://cast-service:80/api/v1/casts/ \
                                   --wait --timeout 5m --atomic
-                            """
+                            '''
                         }
                     }
                 }
