@@ -93,7 +93,8 @@ pipeline {
                                   --set image.tag=${IMAGE_TAG} \
                                   --set service.type=NodePort \
                                   --set service.nodePort=${e.castPort} \
-                                  --wait --timeout 5m --atomic
+                                  --wait \
+                                  --timeout 5m
 
                                 helm upgrade --install movie-service ${HELM_CHART} \
                                   -n ${e.ns} --create-namespace \
