@@ -14,5 +14,9 @@ async def startup():
 async def shutdown():
     await database.disconnect()
 
+@app.get("/api/v1/checkapi")
+async def check_api():
+    return {"status": "ok"}
+
 
 app.include_router(movies, prefix='/api/v1/movies', tags=['movies'])
