@@ -130,22 +130,39 @@ helm upgrade --install movie-service "$HELM_CHART" \
 
         stage('Deploy prod') {
             when {
-                branch 'master'
+                expression { (env.BRANCH_NAME ?: env.GIT_BRANCH ?: '') in ['master', 'origin/master'] }
             }
             steps {
-                input message: 'Confirmer le deploiement en production ?', ok: 'Deploy'
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-creds',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    ),
-                    file(
-                        credentialsId: 'kubeconfig',
-                        variable: 'KUBECONFIG'
+                script {
+                    def deployProd = input(
+                        message: 'Deployer en production ?',
+                        ok: 'Submit',
+                        parameters: [
+                            choice(
+                                name: 'DEPLOY_PROD',
+                                choices: 'yes\nno',
+                                description: 'Select yes to deploy to production or no to cancel.'
+                            )
+                        ]
                     )
-                ]) {
-                    sh '''#!/bin/bash
+
+                    if (deployProd != 'yes') {
+                        echo 'Deploiement production annule par l\'utilisateur.'
+                        return
+                    }
+
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'dockerhub-creds',
+                            usernameVariable: 'DOCKER_USER',
+                            passwordVariable: 'DOCKER_PASS'
+                        ),
+                        file(
+                            credentialsId: 'kubeconfig',
+                            variable: 'KUBECONFIG'
+                        )
+                    ]) {
+                        sh '''#!/bin/bash
 set -euo pipefail
 
 kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
@@ -181,6 +198,7 @@ helm upgrade --install movie-service "$HELM_CHART" \
   --timeout 5m \
   --atomic
 '''
+                    }
                 }
             }
         }
