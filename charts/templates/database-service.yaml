@@ -1,0 +1,19 @@
+{{- if .Values.database.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fastapiapp.databaseFullname" . }}
+  labels:
+    {{- include "fastapiapp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.database.service.port }}
+      targetPort: postgres
+      protocol: TCP
+      name: postgres
+  selector:
+    {{- include "fastapiapp.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+{{- end }}

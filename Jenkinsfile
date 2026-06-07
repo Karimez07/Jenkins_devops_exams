@@ -105,7 +105,8 @@ helm upgrade --install cast-service "$HELM_CHART" \
   --set service.type=NodePort \
   --set service.nodePort="$CAST_PORT" \
   --wait \
-  --timeout 5m
+  --timeout 5m \
+  --atomic
 
 helm upgrade --install movie-service "$HELM_CHART" \
   -n "$NAMESPACE" --create-namespace \
@@ -117,7 +118,8 @@ helm upgrade --install movie-service "$HELM_CHART" \
   --set-string "env[0].name=CAST_SERVICE_HOST_URL" \
   --set-string "env[0].value=http://cast-service:80/api/v1/casts/" \
   --wait \
-  --timeout 5m
+  --timeout 5m \
+  --atomic
 '''
                             }
                         }

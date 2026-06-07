@@ -85,3 +85,15 @@ tolerations: []
 affinity: {}
 
 env: []
+
+database:
+  enabled: true
+  image:
+    repository: postgres
+    pullPolicy: IfNotPresent
+    tag: "12.1-alpine"
+  user: app_user
+  password: app_password
+  name: app_db
+  service:
+    port: 5432
