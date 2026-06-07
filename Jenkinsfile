@@ -21,6 +21,20 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                script {
+                    env.IS_MASTER_BRANCH = sh(
+                        script: '''#!/bin/bash
+set -euo pipefail
+
+if git branch -r --contains HEAD | grep -qE 'origin/master$'; then
+  echo true
+else
+  echo false
+fi
+''',
+                        returnStdout: true
+                    ).trim()
+                }
             }
         }
 
@@ -129,11 +143,13 @@ helm upgrade --install movie-service "$HELM_CHART" \
         }
 
         stage('Deploy prod') {
-            when {
-                expression { (env.BRANCH_NAME ?: env.GIT_BRANCH ?: '') in ['master', 'origin/master'] }
-            }
             steps {
                 script {
+                    if (env.IS_MASTER_BRANCH != 'true') {
+                        echo 'Deploiement production ignore: la branche courante n\'est pas master.'
+                        return
+                    }
+
                     def deployProd = input(
                         message: 'Deployer en production ?',
                         ok: 'Submit',
